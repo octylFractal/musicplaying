@@ -1,5 +1,6 @@
-from app.dao import Sheet, Track, NoteInfo
 from typing import Dict, List
+
+from app.dao import Sheet, Track, NoteInfo
 
 QueueIndex = int
 

@@ -1,13 +1,11 @@
-from typing import List
-
 from antlr4.BufferedTokenStream import BufferedTokenStream
 from antlr4.InputStream import InputStream
 from antlr4.error.ErrorListener import ErrorListener
 from antlr4.error.Errors import NoViableAltException
+from app.gen import SheetLexer, SheetParser
 
 from app.dao import Sheet
 from app.exceptions import AntlrSyntaxError
-from app.gen import SheetLexer, SheetParser
 
 
 def parse(source: str) -> Sheet:
@@ -31,7 +29,7 @@ class SPL(ErrorListener):
         super().__init__()
 
     def syntaxError(self, recognizer: SheetParser, offending_symbol, line, column, msg, e):
-        if isinstance(e,NoViableAltException):
+        if isinstance(e, NoViableAltException):
             msg += "; current ctx = {}".format(type(recognizer._ctx).__name__)
         raise AntlrSyntaxError(msg, line, column)
 

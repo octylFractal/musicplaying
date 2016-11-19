@@ -1,4 +1,5 @@
 import sys
+
 import mido
 from mido import MidiFile
 

@@ -1,8 +1,9 @@
-import sh
 from itertools import chain
 from typing import Dict, List
 
-from app.dao import Sheet, Track, NoteInfo, RestInfo, ChordInfo
+import sh
+
+from app.dao import Track, NoteInfo, RestInfo, ChordInfo
 from .base import SeparateTrackPlayer
 
 play = sh.Command('play')
