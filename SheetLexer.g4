@@ -34,5 +34,5 @@ Identifier: '"' [a-zA-Z0-9\t ]+ '"';
 WS: [\r\n\t ]+;
 
 mode COMMENT;
-Newline: '\n' -> skip, mode(DEFAULT_MODE);
+Newline: '\n' -> mode(DEFAULT_MODE);
 AnythingElse: . -> skip;

@@ -13,15 +13,24 @@ import itertools
 sheet
     returns [sheetObj]
     locals [tempoVal=60,notes=list()]
-    :   (tempoCtx=tempo {$tempoVal = $tempoCtx.val})?
-        (tracks+=track WS?)+
+    :   ws? (tempoCtx=tempo {$tempoVal = $tempoCtx.val})?
+        ws? (tracks+=track ws?)+
         EOF
         {$sheetObj = Sheet($tempoVal, [t.trackObj for t in $tracks])}
     ;
 tempo
     returns [val]
-    : TempoHeader timeCtx=Number {self._input.LT(1).text == "\n"}? WS
+    : TempoHeader timeCtx=Number eventuallyNewline
       {$val = int($timeCtx.text)}
+    ;
+/**
+ * Will eventually match a newline. useful for allowing comments after something
+ * that must be on its own line.
+ */
+eventuallyNewline
+    :
+        ({"\n" in self._input.LT(1).text}? ws)
+        | ws eventuallyNewline
     ;
 noteRestRepeat
     returns [notes=list()]
@@ -59,9 +68,9 @@ track
     returns [trackObj]
     locals [ident,instrument,notes]
     : Track
-        identCtx=Identifier {$ident = $identCtx.text[1:-1]} WS
+        identCtx=Identifier {$ident = $identCtx.text[1:-1]} ws
         instrumentCtx=Identifier {$instrument = $instrumentCtx.text[1:-1]}
-      WS? BlockStart WS? data+=noteRestRepeat (WS data+=noteRestRepeat)* WS? BlockEnd
+      ws? BlockStart ws? data+=noteRestRepeat (ws data+=noteRestRepeat)* ws? BlockEnd
       {$notes = list(itertools.chain.from_iterable(d.notes for d in $data))}
       {$trackObj = Track($ident, $instrument, $notes)}
     ;
@@ -69,7 +78,7 @@ repeat
     returns [notes]
     : Repeat
         count=Number
-      WS? BlockStart WS? data+=noteRestRepeat (WS data+=noteRestRepeat)* WS? BlockEnd
+      ws? BlockStart ws? data+=noteRestRepeat (WS data+=noteRestRepeat)* ws? BlockEnd
       {$notes = int($count.text) * list(itertools.chain.from_iterable(d.notes for d in $data))}
     ;
 timeAndNote
@@ -83,7 +92,7 @@ graceNote
     locals [t, b, s64]
     : GraceNote
         grace=Note
-      WS? BlockStart WS? data=timeAndNote WS? BlockEnd
+      ws? BlockStart ws? data=timeAndNote ws? BlockEnd
       {$t, $b = $data.top, $data.bottom}
       {$s64 = [$t * 64, $b * 64]}
       {$notes = [
@@ -91,3 +100,4 @@ graceNote
             ChordInfo(($s64[0] - $t) / $s64[1], $data.notes)
       ]}
     ;
+ws: (WS|Newline)+;
